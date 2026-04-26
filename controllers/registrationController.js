@@ -1,40 +1,80 @@
 const User = require('../models/userModelSchema')
+const jwt = require('jsonwebtoken')
+const nodemailer = require("nodemailer");
 
 let registrationController = async (req, res) => {
-        const { email, password, confirmPassword, terms } = req.body
-        
-        // <=== User Access by Email ===>
-        let existingUser = await User.findOne({ email: email })
+    const { email, password, confirmPassword, terms } = req.body
 
-        // <=== If User already Avaiable ===>
-        if (existingUser) {
-            return res.send({ message: 'User Already Exist.' })
-        }
-         
-         // <=== if email & password don't match ===>
-        if (!email || !password || !confirmPassword) {
-            return res.send({ message: "Please, Fill all the input." })
-        }
+    // <=== Access user by Email ===>
+    let existingUser = await User.findOne({ email: email })
 
-          // <=== if password & Confirm password don't match ===>
-        if (password !== confirmPassword) {
-            return res.send({ message: "Don't match password." })
-        }
-
-        // <=== if terms is false ===>
-        if (!terms) {
-            return res.send({ message: "Please, Accept our Terms and Condition." })
-        }
-
-        // <=== MongoDB saving proccess START ===>
-        let user = new User({
-            email: email,
-            password: password,
-            terms: terms
-        })
-        user.save()
-        return res.send({ message: "User created successfully." })
-        // <=== MongoDB saving proccess END ===>
+    // <=== If User already Avaiable ===>
+    if (existingUser) {
+        return res.send({ message: 'User Already Exist.' })
     }
 
+    // <=== if email, password & confirm password are empty ===>
+    if (!email || !password || !confirmPassword) {
+        return res.send({ message: "Please, Fill all the input." })
+    }
+
+    // <=== if password & Confirm password don't match ===>
+    if (password !== confirmPassword) {
+        return res.send({ message: "Don't match password." })
+    }
+
+    // <=== if terms is false ===>
+    if (!terms) {
+        return res.send({ message: "Please, Accept our Terms and Condition." })
+    }
+
+    // <=== MongoDB saving proccess START ===>
+    let user = new User({
+        email: email,
+        password: password,
+        terms: terms
+    })
+    user.save()
+
+   // <=== Token Genarate ===>
+    let token = jwt.sign({
+        id: user._id,
+        email: user.email
+    },
+        process.env.TOKEN_SECRET, {
+        expiresIn: "1d"
+    })
+
+   // <=== Verification email proccess START ===>
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        port: 587,
+        secure: false,
+        auth: {
+            user: process.env.VERIFY_EMAIL,
+            pass: process.env.VERIFY_EMAIL_PASSWORD,
+        },
+    });
+
+    try {
+        const info = await transporter.sendMail({
+            from: process.env.VERIFY_EMAIL, // sender address
+            to: email,
+            subject: "Pleace, Verify your email", // subject line
+            html: `<body style=margin:0;padding:0;background-color:#f4f6f8;font-family:Arial,sans-serif><table cellpadding=0 cellspacing=0 style="padding:20px 10px"width=100%><tr><td align=center><table cellpadding=0 cellspacing=0 style=background:#fff;border-radius:10px;overflow:hidden width=600><tr><td style=background:#28a745;padding:25px;text-align:center;color:#fff><h1 style=margin:0>Eco Bazar</h1><p style="margin:5px 0">Fresh • Organic • Sustainable<tr><td style=padding:30px;text-align:center><h2 style=color:#333>Verify Your Email</h2><p style=color:#555;line-height:1.6;font-size:15px>Welcome to <strong>Eco Bazar</strong> 🌿<br>Please confirm your email address to activate your account.<div style="margin:30px 0"><a href="http://localhost:5173/verifyemail/${token}" style="background:#28a745;color:#fff;padding:14px 30px;text-decoration:none;border-radius:6px;font-weight:700;display:inline-block">Verify Email</a></div><p style=color:#777;font-size:13px>If the button doesn't work, copy and paste this link into your browser:<p style=color:#28a745;font-size:13px;word-break:break-all>"http://localhost:5173/verifyemail/${token}"<p style=color:#999;font-size:13px;margin-top:20px>This link will expire soon for security reasons.<p style=color:#999;font-size:13px>If you didn’t create an account, you can safely ignore this email.<tr><td style=background:#f1f1f1;padding:20px;text-align:center;font-size:12px;color:#777><p style=margin:5px>© 2026 Eco Bazar. All rights reserved.<p style=margin:5px>Dhaka, Bangladesh<br>support@ecobazar.com</table></table>`, 
+        });
+        console.log("Message sent: %s", info.messageId);
+    // Preview URL is only available when using an Ethereal test account
+        console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    } catch (err) {
+        console.error("Error while sending mail:", err);
+    }
+    // <=== Verification email proccess END ===>
+
+    return res.send({ message: "User created successfully." })
+    // <=== MongoDB saving proccess END ===>
+}
+
 module.exports = registrationController
+ 
+// ndmt uxan reaf igve
