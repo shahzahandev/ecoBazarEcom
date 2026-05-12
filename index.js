@@ -4,7 +4,7 @@ const cors = require('cors')
 const express = require('express')
 const app = express()
 const dbConnection = require('./config/dbConnection')
-const {  registrationController, loginController, forgotPasswordController, reSetPasswordController, resendEmailVerificationController } = require('./controllers/registrationController')
+const {  registrationController, loginController, forgotPasswordController, reSetPasswordController, resendEmailVerificationController, verifyEmailController } = require('./controllers/registrationController')
 
 // <=== middleware ===>
 app.use(express.json())
@@ -22,6 +22,7 @@ app.post("/login", loginController)
 app.post("/forgotPassword", forgotPasswordController)
 app.post("/resetPassword/:token", reSetPasswordController)
 app.post("/resendEmailVerification", resendEmailVerificationController)
+app.post("/verifyEmailController/:token", verifyEmailController)
 
 
 // <=== port ===> 

@@ -10,13 +10,24 @@ let userModelSchema = new Schema({
         type: String
     },
     email: {
-        type: String
+        type: String,
+        required: [true, 'Email is required'],
+        trim: true,
+        lowercase: true,
+        unique: true,
+        match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please fill a valid email address'],
     },
     password: {
-        type: String
+        type: String,
+        required: [true, 'Password is required'],
+        minLength: 8,
+        select: true,
+        // match: [/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/, 'Please enter a stronger password'],
     },
     phoneNumber: {
-        type: String
+        type: String,
+        unique: true,
+        sparse: true,
     },
     terms: {
         type: Boolean
