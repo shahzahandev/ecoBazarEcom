@@ -1,4 +1,5 @@
 const User = require('../models/userModelSchema')
+const jwt = require('jsonwebtoken')
 const { mailVerification } = require('../utils/email');
 const { tokenGenerator } = require('../utils/tokenGenerator');
 const { emptyFillValidation } = require('../utils/validation');
@@ -36,12 +37,11 @@ let registrationController = async (req, res) => {
     user.save()
 
     // <=== Token Genarate ===>
-    tokenGenerator({
+    let token = tokenGenerator({
         id: user._id,
         email: user.email
-    }, process.env.TOKEN_SECRET, {
-        expiresIn: "1d"
-    })
+    }, process.env.TOKEN_SECRET, 
+       process.env.JWT_EXPIRES)
 
     mailVerification(token, email)
 
