@@ -120,7 +120,7 @@ let forgotPasswordController = async (req, res) => {
 
     try {
         // <=== Access user by Email ===>
-        let existingUser = await User.findOne({ email: email })
+        let existingUser = await User.findOne({ email})
 
         // <=== If User already Avaiable ===>
         if (!existingUser) {
@@ -158,7 +158,7 @@ let forgotPasswordController = async (req, res) => {
 }
 
 // with out test in postman
-let reSetPasswordController = async (req, res) => {
+let reSetPasswordController = (req, res) => {
     let { newPassword, confirmPassword } = req.body
     let { token } = req.params
 
@@ -172,11 +172,21 @@ let reSetPasswordController = async (req, res) => {
 
         // <=== token decoded ===>
         jwt.verify(token, process.env.TOKEN_SECRET, async function (err, decoded) {
+            console.log(token);
+            
             if (err) {
-                return res.send({ message: "Unauthorization." })
+                console.log(err);
+                
+                return res.send({
+                    success: false,
+                    message: "Unauthorized." 
+                })
+                
             } else {
+                console.log(decoded);
+                
                 let hash = bcrypt.hashSync(newPassword, 10)
-                let updateData = await User.findByIdAndUpdate({ _id: decoded.id }, { password: hash })
+                let updateData = await User.findByIdAndUpdate(decoded.id, { password: hash })
                 return res.send({
                     success: true,
                     message: 'Password updated.'
