@@ -5,6 +5,20 @@ const express = require('express')
 const app = express()
 const dbConnection = require('./config/dbConnection')
 const {  registrationController, loginController, forgotPasswordController, reSetPasswordController, resendEmailVerificationController, verifyEmailController } = require('./controllers/registrationController')
+const { rateLimit } = require('express-rate-limit') 
+
+
+
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	limit: 100,
+	standardHeaders: 'draft-8',
+	legacyHeaders: false, 
+	ipv6Subnet: 56,
+})
+
+app.use(limiter)
+
 
 // <=== middleware ===>
 app.use(express.json())
