@@ -1,8 +1,8 @@
 let emptyFillValidation = (res, ...fields) => {
      if (fields.includes("") || fields.includes(undefined)) {
-        return res.send({ 
-            success: true,
-            message: "Please, Fill all the field." 
+        return res.status(400).json({ 
+            success: false,
+            message: "All required fields must be provided." 
         })
     }
 }

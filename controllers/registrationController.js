@@ -7,7 +7,6 @@ const { tokenGenerator } = require('../utils/tokenGenerator');
 const { emptyFillValidation } = require('../utils/validation');
 
 
-
 let registrationController = async (req, res) => {
     const { email, password, confirmPassword, terms } = req.body
 
@@ -17,9 +16,9 @@ let registrationController = async (req, res) => {
 
         // <=== If User already Avaiable ===>
         if (existingUser) {
-            return res.send({
+            return res.status(409).json({
                 success: false,
-                message: 'User Already Exist.'
+                message: "An account already exists with this email address."
             })
         }
 
@@ -28,17 +27,17 @@ let registrationController = async (req, res) => {
 
         // <=== if password & Confirm password don't match ===>
         if (password !== confirmPassword) {
-            return res.send({
+            return res.status(400).json({
                 success: false,
-                message: "Don't match password."
+                message: "Password and confirm password do not match."
             })
         }
 
         // <=== if terms is false ===>
         if (!terms) {
-            return res.send({
+            return res.status(400).json({
                 success: false,
-                message: "Please, Accept our Terms and Condition."
+                message: "You must accept the terms and conditions to continue."
             })
         }
         const hash = bcrypt.hashSync(password, 10)
@@ -46,7 +45,7 @@ let registrationController = async (req, res) => {
         let user = new User({
             email, password: hash, terms
         })
-        user.save()
+        await user.save()
 
         // <=== Token Genarate ===>
         let token = tokenGenerator({
@@ -58,16 +57,16 @@ let registrationController = async (req, res) => {
         // <===  Mail Verification ===>
         mailVerification(token, email)
 
-        return res.send({
+        return res.status(201).json({
             success: true,
-            message: "User created successfully.",
+            message: "Account created successfully. Please verify your email.",
             userEmail: user.email
         })
         // <=== MongoDB saving proccess END ===>
     } catch (error) {
-        return res.send({
+        return res.status(500).json({
             success: false,
-            message: 'Server error',
+            message: "Internal server error. Please try again later.",
             error: error
         })
     }
@@ -82,9 +81,9 @@ let loginController = async (req, res) => {
 
         // <=== If User already Avaiable ===>
         if (!existingUser) {
-            return res.send({
+           return res.status(404).json({
                 success: false,
-                message: 'User not found.'
+                message: "No account found with this email address."
             })
         }
 
@@ -95,22 +94,27 @@ let loginController = async (req, res) => {
         let pass = bcrypt.compareSync(password, existingUser.password);
         if (!pass) {
             // <=== If password not matching ===> 
-            return res.send({
+               return res.status(401).json({
                 success: false,
-                message: 'Invalid Credential.'
+                message: "Invalid email or password."
             })
         } else {
             // <=== If password matching ===> 
-            return res.send({
-                success: true,
-                message: 'Login successfully done.'
-            })
+           return res.status(200).json({
+            success: true,
+            message: "Login completed successfully.",
+            data: {
+                userId: existingUser._id,
+                email: existingUser.email
+            }
+        })
         }
     } catch (error) {
-        return res.send({
+        // <=== Server Error ===>
+        return res.status(500).json({
             success: false,
-            message: 'Server error',
-            error: error
+            message: "Internal server error. Please try again later.",
+            error: error.message
         })
     }
 }
@@ -124,9 +128,9 @@ let forgotPasswordController = async (req, res) => {
 
         // <=== If User already Avaiable ===>
         if (!existingUser) {
-            return res.send({
+             return res.status(404).json({
                 success: false,
-                message: 'User not found.'
+                message: "No account found with this email address."
             })
         }
 
@@ -141,18 +145,19 @@ let forgotPasswordController = async (req, res) => {
             process.env.JWT_EXPIRES)
 
         // <===  Mail Verification ===>
-        resetPassword(token, email)
+        await resetPassword(token, email)
 
-        // <===If everything is ok, then Response message ===>
-        return res.send({
+       // <=== Success Response ===>
+        return res.status(200).json({
             success: true,
-            message: 'Please, check your email.'
+            message: "Password reset link has been sent to your email address."
         })
     } catch (error) {
-        return res.send({
+        // <=== Server Error ===>
+        return res.status(500).json({
             success: false,
-            message: 'Server error',
-            error: error
+            message: "Internal server error. Please try again later.",
+            error: error.message
         })
     }
 }
