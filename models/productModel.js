@@ -55,6 +55,17 @@ let productSchema = new Schema({
         enum: ['pending', 'active', 'inactive'],
         default: 'pending'
     },
+    images:[
+        {
+            url:{
+                type: String,
+                isMain:{
+                    type: Boolean,
+                    default: false
+                }
+            }
+        }
+    ]
 }, {timestamps: true})
 
 module.exports = mongoose.model('Product', productSchema)

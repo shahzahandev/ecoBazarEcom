@@ -1,4 +1,4 @@
-let emptyFillValidation = require('../utils/validation')
+// let emptyFillValidation = require('../utils/validation')
 let Product = require('../models/productModel')
 
 // Create product
@@ -110,4 +110,26 @@ let deleteProductController = async (req, res) => {
     }
 }
 
-module.exports = { productController, allProductController, singleProductController, deleteProductController }
+// Update Product
+let updateProductController = async(req, res) => {
+    let {id} = req.params
+
+    try {
+        let updateProduct = await Product.findByIdAndUpdate({_id: id}, req.body, {new: true})
+        return res.status(200).json({
+            success: true,
+            message: 'Product update successfully.'
+        })
+    } catch (error) {
+          return res.status(500).json({
+            success: false,
+            message: "Internal server error. Please try again later.",
+            error: error.message
+        })
+    }
+}
+
+
+
+
+module.exports = { productController, allProductController, singleProductController, deleteProductController, updateProductController }

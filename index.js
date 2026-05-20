@@ -7,16 +7,16 @@ const dbConnection = require('./config/dbConnection')
 const {  registrationController, loginController, forgotPasswordController, reSetPasswordController, resendEmailVerificationController, verifyEmailController } = require('./controllers/registrationController')
 const { rateLimit } = require('express-rate-limit'); 
 const { getAllUsersController, singleUserController, deleteUserController, updateUserController } = require('./controllers/userController');
-const { productController, allProductController, singleProductController, deleteProductController } = require('./controllers/productController');
+const { productController, allProductController, singleProductController, deleteProductController, updateProductController } = require('./controllers/productController');
 
-// <=== middleware ===>
+// <==== middleware ====>
 app.use(express.json())
 app.use(cors())
 
 // <==== Database connetion =====>
 dbConnection()
 
-// <==== Registration Rotue =====>
+// <==== Authentication Rotue =====>
 app.post("/registration", registrationController)
 app.post("/login", loginController)
 app.post("/forgotPassword", forgotPasswordController)
@@ -24,30 +24,34 @@ app.post("/resetPassword/:token", reSetPasswordController)
 app.post("/resendEmailVerification", resendEmailVerificationController)
 app.post("/verifyEmailController/:token", verifyEmailController)
 
-// Product Create
+// <==== Product Management Rotue =====>
 app.post('/createProduct', productController)
 app.get('/allProduct', allProductController)
 app.post('/singleProduct', singleProductController)
 app.delete('/deleteProduct', deleteProductController)
+app.post('/updateProduct/:id', updateProductController)
 
-// Order Management 
+// <==== Order Management Route =====>
 
-// User Management
+
+// <==== User Management Route =====>
 app.get("/allUsers", getAllUsersController)
-app.get("/singleUser/:id", singleUserController)
+app.post("/singleUser/:id", singleUserController)
 app.delete("/deleteUser/:id", deleteUserController)
 app.post("/udateUser/:id", updateUserController)
 
 
-// <=== PORT ===> 
+// <=== = PORT ====> 
 const port = process.env.PORT || 5000
 
-// <=== port ===> 
+// <==== port ====> 
 app.listen(port, (req, res) => {
     console.log(`Server is running on port ${port}`);
 })
 
 
+
+// <==== limiter ====>
 
 // const limiter = rateLimit({
 // 	windowMs: 15 * 60 * 1000,
