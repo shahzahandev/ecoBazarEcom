@@ -7,7 +7,7 @@ const dbConnection = require('./config/dbConnection')
 const {  registrationController, loginController, forgotPasswordController, reSetPasswordController, resendEmailVerificationController, verifyEmailController } = require('./controllers/registrationController')
 const { rateLimit } = require('express-rate-limit'); 
 const { getAllUsersController, singleUserController, deleteUserController, updateUserController } = require('./controllers/userController');
-const { productController } = require('./controllers/productController');
+const { productController, allProductController, singleProductController, deleteProductController } = require('./controllers/productController');
 
 // <=== middleware ===>
 app.use(express.json())
@@ -26,6 +26,9 @@ app.post("/verifyEmailController/:token", verifyEmailController)
 
 // Product Create
 app.post('/createProduct', productController)
+app.get('/allProduct', allProductController)
+app.post('/singleProduct', singleProductController)
+app.delete('/deleteProduct', deleteProductController)
 
 // Order Management 
 

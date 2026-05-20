@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const {Schema} = mongoose
 
 let productSchema = new Schema({
-    titile:{
+    title:{
         type: String,
         unique: true,
         required: true

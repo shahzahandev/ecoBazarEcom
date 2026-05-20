@@ -67,7 +67,7 @@ let registrationController = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Internal server error. Please try again later.",
-            error: error
+            error: error.message
         })
     }
 }
