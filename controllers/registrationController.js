@@ -163,7 +163,7 @@ let forgotPasswordController = async (req, res) => {
 }
 
 // with out test in postman
-let reSetPasswordController = (req, res) => {
+let reSetPasswordController = async(req, res) => {
     let { newPassword, confirmPassword } = req.body
     let { token } = req.params
 
