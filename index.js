@@ -8,16 +8,18 @@ const {  registrationController, loginController, forgotPasswordController, reSe
 const { rateLimit } = require('express-rate-limit'); 
 const { getAllUsersController, singleUserController, deleteUserController, updateUserController } = require('./controllers/userController');
 const { productController, allProductController, singleProductController, deleteProductController, updateProductController } = require('./controllers/productController');
+const { upload, uploadUser } = require('./config/imageStorage');
 
 // <==== middleware ====>
 app.use(express.json())
 app.use(cors())
 
+
 // <==== Database connetion =====>
 dbConnection()
 
 // <==== Authentication Rotue =====>
-app.post("/registration", registrationController)
+app.post("/registration", uploadUser.single('photo'), registrationController)
 app.post("/login", loginController)
 app.post("/forgotPassword", forgotPasswordController)
 app.post("/resetPassword/:token", reSetPasswordController)
@@ -25,7 +27,7 @@ app.post("/resendEmailVerification", resendEmailVerificationController)
 app.post("/verifyEmailController/:token", verifyEmailController)
 
 // <==== Product Management Rotue =====>
-app.post('/createProduct', productController)
+app.post('/createProduct', upload.array('photos', 5), productController)
 app.get('/allProduct', allProductController)
 app.post('/singleProduct', singleProductController)
 app.delete('/deleteProduct', deleteProductController)

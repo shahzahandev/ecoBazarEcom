@@ -62,7 +62,7 @@ let productSchema = new Schema({
                 isMain:{
                     type: Boolean,
                     default: false
-                }
+                },
             }
         }
     ]
