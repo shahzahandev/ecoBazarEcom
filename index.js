@@ -9,6 +9,7 @@ const { rateLimit } = require('express-rate-limit');
 const { getAllUsersController, singleUserController, deleteUserController, updateUserController } = require('./controllers/userController');
 const { productController, allProductController, singleProductController, deleteProductController, updateProductController } = require('./controllers/productController');
 const { upload, uploadUser } = require('./config/imageStorage');
+const { createCard, increDecre, getCard, Productdelete } = require('./controllers/cardController');
 
 // <==== middleware ====>
 app.use(express.json())
@@ -33,6 +34,14 @@ app.post('/singleProduct', singleProductController)
 app.delete('/deleteProduct', deleteProductController)
 app.post('/updateProduct/:id', updateProductController)
 
+
+// <==== Card Management Route =====>
+app.post('/card/create', createCard)
+app.post('/card/update/:id', increDecre)
+app.get('/card/:userId', getCard)
+app.delete('/card/delete', Productdelete)
+
+
 // <==== Order Management Route =====>
 
 
@@ -45,12 +54,9 @@ app.post("/udateUser/:id", updateUserController)
 
 // <=== = PORT ====> 
 const port = process.env.PORT || 5000
-
-// <==== port ====> 
 app.listen(port, (req, res) => {
     console.log(`Server is running on port ${port}`);
 })
-
 
 
 // <==== limiter ====>
