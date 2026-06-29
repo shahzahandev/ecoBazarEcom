@@ -16,9 +16,24 @@ const createCart = async (req, res) => {
             })
         }
 
+        const existingProductOnCart = await Card.findOne({ product: proid, user: userid });
+
+        if (existingProductOnCart) {
+            existingProductOnCart.quantity += 1
+            existingProductOnCart.totalPrice = existingProductOnCart.totalPrice + existingProduct.price
+            existingProductOnCart.save();
+
+            return res.status(200).json({
+                success: true,
+                message: 'Product quantity updated successfully',
+                data: existingProductOnCart
+            });
+        }
+
         let card = new Card({
             product: proid,
             quantity: 1,
+            totalPrice: existingProduct.price,
             user: userid
         })
         await card.save();
@@ -40,21 +55,28 @@ const createCart = async (req, res) => {
 const increDecre = async (req, res) => {
     try {
         const { id } = req.params // this id will be card id
-        const { type } = req.body
+        const { type, userid } = req.body
 
-        const product = await Card.findById({ _id: id })
+        const cart = await Card.findOne({ _id: id,  user: userid })
+        const product = await Product.findById(cart.product )
 
         if (type === 'plus') {
-            product.quantity += 1;
+            cart.quantity += 1;
+            cart.totalPrice = cart.totalPrice + product.price
+            await cart.save();
+
         } else if (type === 'minus') {
-            if (product.quantity <= 1) {
+            if (cart.quantity <= 1) {
                 return res.status(400).json({
                     success: false,
                     message: 'Quantity cannot be less than 1'
                 });
             }
 
-            product.quantity -= 1;
+            cart.quantity -= 1;
+            cart.totalPrice = cart.totalPrice - product.price
+            await cart.save();
+
         } else {
             return res.status(400).json({
                 success: false,
@@ -62,12 +84,12 @@ const increDecre = async (req, res) => {
             });
         }
 
-        await product.save();
+        await cart.save();
 
         return res.status(200).json({
             success: true,
             message: 'Product updated successfully',
-            data: product
+            data: cart
         })
 
     } catch (error) {
