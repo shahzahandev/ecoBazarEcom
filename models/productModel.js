@@ -10,7 +10,7 @@ let productSchema = new Schema({
     description:{
         type: String,
     },
-      shortDescription:{
+    shortDescription:{
         type: String,
     },
     price:{
@@ -39,7 +39,7 @@ let productSchema = new Schema({
         type: String,
         required: true
     },
-     subCategory:{
+    subCategory:{
         type: String,
     },
     tag:[

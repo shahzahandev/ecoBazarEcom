@@ -2,13 +2,12 @@ const Card = require('../models/cardModel');
 const Product = require('../models/productModel');
 
 
-
-// Card create controller
-const createCard = async (req, res) => {
+//  Create Cart
+const createCart = async (req, res) => {
     try {
-        const { id } = req.params
+        const { proid, userid } = req.body
 
-        const existingProduct = await Product.findOne({ id })
+        const existingProduct = await Product.findOne({ _id: proid })
 
         if (!existingProduct) {
             return res.status(404).json({
@@ -17,12 +16,12 @@ const createCard = async (req, res) => {
             })
         }
 
-        let cart = new Card({
-            product: id,
-            quantiiy: 1,
-            userId: userId
+        let card = new Card({
+            product: proid,
+            quantity: 1,
+            user: userid
         })
-        await Card.save();
+        await card.save();
 
         return res.status(200).json({
             success: true,
@@ -30,79 +29,102 @@ const createCard = async (req, res) => {
         })
     } catch (error) {
         return res.status(500).json({
-            success: true,
+            success: false,
             message: 'Server error'
         })
     }
 
 }
 
-// Product increDecre Controller
+// Cart Quantity increDecre
 const increDecre = async (req, res) => {
     try {
-        const { id } = req.params
+        const { id } = req.params // this id will be card id
         const { type } = req.body
 
-        const product = await Product.findOne({ id })
+        const product = await Card.findById({ _id: id })
 
         if (type === 'plus') {
-            product.quantiiy = product.quantiiy + 1
+            product.quantity += 1;
+        } else if (type === 'minus') {
+            if (product.quantity <= 1) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Quantity cannot be less than 1'
+                });
+            }
+
+            product.quantity -= 1;
         } else {
-            product.quantiiy = product.quantiiy - 1
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid type. Use plus or minus'
+            });
         }
+
         await product.save();
 
         return res.status(200).json({
             success: true,
-            message: 'Product updated successfully'
+            message: 'Product updated successfully',
+            data: product
         })
+
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: 'Server Error'
+            message: 'Server Error',
+            error: error.message
         })
     }
 }
 
-// Product Delete Controller
-const Productdelete = async (req, res) => {
+// Cart Delete
+const cartdelete = async (req, res) => {
     try {
         const { id } = req.params
 
-        await Card.findByIdAndDelete({ id })
+        const deletedCart = await Card.findByIdAndDelete({ _id: id })
+
+        if (!deletedCart) {
+            return res.status(404).json({
+                success: false,
+                message: 'Cart item not found'
+            });
+        }
 
         return res.status(200).json({
             success: true,
-            message: 'Product Deleted'
+            message: 'Product Deleted sucessfully'
         })
 
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: 'Server Error'
+            message: 'Server Error',
+            error: error.message
         })
     }
 }
-
 
 // Get card Controller
 const getCard = async (req, res) => {
     try {
         const { userId } = req.params
 
-        const card = await Card.find({ _id: userI })
+        const card = await Card.find({ user: userId }).populate("user product")
 
         let totalPrice = 0
-
-        card.map(item => {
-            totalPrice += item.price
+        card.forEach(item => {
+            totalPrice += item.product.price * item.quantity;
         })
 
         return res.status(200).json({
-            success: false,
+            success: true,
             card,
             totalPrice
         })
+
     } catch (error) {
         return res.status(500).json({
             success: false,
@@ -111,4 +133,4 @@ const getCard = async (req, res) => {
     }
 }
 
-module.exports = { createCard, increDecre, Productdelete, getCard }
+module.exports = { createCart, increDecre, cartdelete, getCard }

@@ -1,13 +1,12 @@
 const mongoose = require('mongoose');
 
-
 const cardSchema = new mongoose.Schema({
-   proudct: {
+   product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
       required: true
    },
-   quantiiy: {
+   quantity: {
       type: Number,
       min: 1,
       required: true
