@@ -20,8 +20,9 @@ const createCart = async (req, res) => {
 
         if (existingProductOnCart) {
             existingProductOnCart.quantity += 1
-            existingProductOnCart.totalPrice = existingProductOnCart.totalPrice + existingProduct.price
-            existingProductOnCart.save();
+            const finalPrice = existingProduct.discountPrice > 0 ? existingProduct.discountPrice : existingProduct.price;
+            existingProductOnCart.totalPrice = existingProductOnCart.quantity * finalPrice
+            await existingProductOnCart.save();
 
             return res.status(200).json({
                 success: true,
@@ -32,20 +33,22 @@ const createCart = async (req, res) => {
 
         let card = new Card({
             product: proid,
+            user: userid,
             quantity: 1,
             totalPrice: existingProduct.price,
-            user: userid
         })
         await card.save();
 
         return res.status(200).json({
             success: true,
-            message: 'Product added successfully'
+            message: 'Product added successfully',
+            data: card
         })
     } catch (error) {
         return res.status(500).json({
             success: false,
-            message: 'Server error'
+            message: 'Server error',
+            error: error.message
         })
     }
 
@@ -57,14 +60,18 @@ const increDecre = async (req, res) => {
         const { id } = req.params // this id will be card id
         const { type, userid } = req.body
 
-        const cart = await Card.findOne({ _id: id,  user: userid })
-        const product = await Product.findById(cart.product )
+        const cart = await Card.findOne({ _id: id, user: userid });
+
+        if (!cart) {
+            return res.status(404).json({
+                success: false,
+                message: "Cart item not found"
+            });
+        }
+        const product = await Product.findById(cart.product)
 
         if (type === 'plus') {
             cart.quantity += 1;
-            cart.totalPrice = cart.totalPrice + product.price
-            await cart.save();
-
         } else if (type === 'minus') {
             if (cart.quantity <= 1) {
                 return res.status(400).json({
@@ -72,11 +79,7 @@ const increDecre = async (req, res) => {
                     message: 'Quantity cannot be less than 1'
                 });
             }
-
             cart.quantity -= 1;
-            cart.totalPrice = cart.totalPrice - product.price
-            await cart.save();
-
         } else {
             return res.status(400).json({
                 success: false,
@@ -84,6 +87,7 @@ const increDecre = async (req, res) => {
             });
         }
 
+        cart.totalPrice = cart.quantity * product.price;
         await cart.save();
 
         return res.status(200).json({
@@ -134,11 +138,11 @@ const getCard = async (req, res) => {
     try {
         const { userId } = req.params
 
-        const card = await Card.find({ user: userId }).populate("user product")
+        const card = await Card.find({ user: userId }).populate("user product"); 
 
-        let totalPrice = 0
-        card.forEach(item => {
-            totalPrice += item.product.price * item.quantity;
+        let totalPrice = 0;
+        card.map(item => {
+            totalPrice += item.totalPrice
         })
 
         return res.status(200).json({

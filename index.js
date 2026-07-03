@@ -10,6 +10,7 @@ const { getAllUsersController, singleUserController, deleteUserController, updat
 const { productController, allProductController, singleProductController, deleteProductController, updateProductController } = require('./controllers/productController');
 const { upload, uploadUser } = require('./config/imageStorage');
 const { createCart, increDecre, getCard, cartdelete } = require('./controllers/cardController');
+const { paymentController, getOrder } = require('./controllers/paymentController');
 
 // <==== middleware ====>
 app.use(express.json());
@@ -41,9 +42,11 @@ app.post('/cart/update/:id', increDecre); // tested
 app.get('/cart/:userId', getCard); // tested
 app.delete('/cart/delete/:id', cartdelete); // tested
 
-
+ 
 
 // <==== Order Management Route =====>
+app.post("/payment", paymentController);
+app.get("/getOrder/:id", getOrder);
 
 
 // <==== User Management Route =====>

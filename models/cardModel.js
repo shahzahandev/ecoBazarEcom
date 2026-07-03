@@ -20,6 +20,9 @@ const cardSchema = new mongoose.Schema({
       ref: 'User',
       required: true
    }
-})
+});
+
+// Same user same product duplicate cart item create korte parbe na
+cardSchema.index({ user: 1, product: 1 }, { unique: true });
 
 module.exports = mongoose.model("Card", cardSchema)
